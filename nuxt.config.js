@@ -12,6 +12,10 @@ export default {
 
   serverMiddleware: ['~/api/index.js'],
 
+  env: {
+    baseUrl: process.env.BASE_URL || 'http://localhost:3000',
+  },
+
   /*
    ** Headers of the page
    ** See https://nuxtjs.org/api/configuration-head
