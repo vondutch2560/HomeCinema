@@ -15,16 +15,23 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+
 export default {
-  props: {
-    selectedMovie: { type: [String], default: '' },
-    listMovie: { type: [Array], default: () => [] },
+  computed: {
+    ...mapState('ManagerMovie', ['selectedMovie', 'listMovie']),
+  },
+
+  beforeCreate() {
+    this.$store.dispatch('ManagerMovie/setupDataInit')
   },
 
   methods: {
     selectMovie(event) {
       const fileNameMovie = event.target.innerHTML.trim()
-      this.$store.dispatch('ManagerMovie/getInfoMovieByName', fileNameMovie)
+      this.$store.dispatch('ManagerMovie/getInfoMovie', {
+        ByName: fileNameMovie,
+      })
     },
   },
 }

@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1>Manager Movie</h1>
-    <side-bar :selected-movie="selectedMovie" :list-movie="listMovie" />
+    <side-bar />
     <div class="main">
       <cover-movie />
       <div class="properties-movie"></div>
@@ -10,25 +10,11 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
 import SideBar from '@/components/Manager/SideBar'
 import CoverMovie from '@/components/Manager/CoverMovie'
 
 export default {
   components: { SideBar, CoverMovie },
-
-  computed: {
-    ...mapState('ManagerMovie', [
-      'infoMovie',
-      'listMovie',
-      'selectedMovie',
-      'secureImage',
-    ]),
-  },
-
-  beforeCreate() {
-    this.$store.dispatch('ManagerMovie/setupDataInit')
-  },
 }
 </script>
 

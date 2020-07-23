@@ -1,8 +1,28 @@
 <template>
   <div class="cover-movie">
     <div class="img" :style="`background-image:url(${imageCover})`" />
-    <div v-if="infoMovie.imageCover === 'loading'" class="lds-hourglass"></div>
-    <!-- <p class="age-not-found">Không tìm thấy film</p> -->
+    <div v-if="isLoadingMovie" class="lds-hourglass"></div>
+    <p v-if="isNoMovieMatched" class="movie-not-found">Movie Not Found</p>
+    <div v-if="moviesMatched.length > 0" class="movies-matched">
+      <div
+        v-for="(movieMatched, index) in moviesMatched"
+        :key="index"
+        class="item-movie-matched"
+        @click="getInfoByLink(movieMatched.url)"
+      >
+        <div
+          class="thumbnail"
+          :style="`
+            background-image: url(${
+              secureImage
+                ? 'http://localhost:3000/tiger.jpg'
+                : movieMatched.thumbnail
+            });
+          `"
+        ></div>
+        <p class="code">{{ movieMatched.code }}</p>
+      </div>
+    </div>
     <label
       ><input type="checkbox" :checked="secureImage" @click="toggleSecureImg" />
       Secure Image</label
@@ -15,15 +35,16 @@ import { mapState } from 'vuex'
 
 export default {
   computed: {
-    ...mapState('ManagerMovie', ['infoMovie', 'secureImage']),
+    ...mapState('ManagerMovie', [
+      'infoMovie',
+      'secureImage',
+      'moviesMatched',
+      'isLoadingMovie',
+      'isNoMovieMatched',
+    ]),
 
     imageCover() {
-      if (
-        this.infoMovie.imageCover === '' ||
-        this.infoMovie.imageCover === 'loading'
-      )
-        return ''
-      return this.secureImage
+      return this.secureImage && this.infoMovie.imageCover !== ''
         ? 'http://localhost:3000/tiger.jpg'
         : this.infoMovie.imageCover
     },
@@ -32,7 +53,13 @@ export default {
   methods: {
     toggleSecureImg(event) {
       this.$store.dispatch('ManagerMovie/updateState', {
-        secureImage: event.target.checked,
+        secureImage: !this.secureImage,
+      })
+    },
+
+    getInfoByLink(url) {
+      this.$store.dispatch('ManagerMovie/getInfoMovie', {
+        ByLink: encodeURIComponent(url),
       })
     },
   },
@@ -41,10 +68,37 @@ export default {
 <style lang="scss">
 .cover-movie {
   display: inline-block;
-  width: 40%;
+  width: 45%;
   border: 1px solid #666;
   vertical-align: top;
   position: relative;
+
+  .movies-matched {
+    position: absolute;
+    top: 6%;
+    left: 4%;
+    right: 4%;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: repeat(3, calc(88% / 3));
+    grid-gap: 6%;
+    .item-movie-matched {
+      cursor: pointer;
+      .thumbnail {
+        width: 100%;
+        padding-bottom: 136%;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+        border: 1px solid #777;
+      }
+      p.code {
+        color: #ccc;
+        text-align: center;
+        padding-top: 5px;
+      }
+    }
+  }
 
   .img {
     width: 100%;
@@ -54,15 +108,17 @@ export default {
     background-size: cover;
   }
 
-  p.image-not-found {
+  p.movie-not-found {
     position: absolute;
     text-align: center;
-    font-size: 16px;
+    font-size: 1.8em;
     top: 50%;
     left: 0;
     right: 0;
     margin: auto;
     transform: translateY(-50%);
+    color: #ccc;
+    font-weight: bold;
   }
 
   .lds-hourglass {

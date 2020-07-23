@@ -9,6 +9,7 @@ export const state = () => ({
   listStudio: [],
   selectedMovie: '',
   secureImage: true,
+  isLoadingMovie: false,
   infoMovie: {
     fileName: '',
     movieName: '',
@@ -23,9 +24,8 @@ export const state = () => ({
     releaseDate: '',
     imageCover: '',
   },
-  responseError: {
-    message: '',
-  },
+  moviesMatched: [],
+  isNoMovieMatched: false,
 })
 
 export const mutations = {
@@ -34,54 +34,28 @@ export const mutations = {
       state[key] = objMovie[key]
     }
   },
-
-  // changeImageCover(state, str) {
-  //   state.imageCover = str
-  // },
-  // addListStudio(state, newStudio) {
-  //   state.listStudio.push(newStudio)
-  // }
 }
 
 export const actions = {
   async setupDataInit({ commit }) {
-    const dataInit = [
-      { listMovie: await customAxios('getDataInit') },
-      // { listStudio: await customAxios('/studio') },
-      // { listGenre: await customAxios('/genre') },
-    ]
+    const dataInit = [{ listMovie: await customAxios('getDataInit') }]
     dataInit.forEach((item) => {
       commit('updateState', item)
     })
   },
 
-  async getInfoMovieByName({ commit, state, dispatch }, fileNameMovie) {
-    commit('updateState', { selectedMovie: fileNameMovie })
-    commit('updateState', { infoMovie: { imageCover: 'loading' } })
-    const response = await customAxios(`getInfoMovieByName/${fileNameMovie}`)
-    if (response.status) commit('updateState', { infoMovie: response.data })
-    // if (dataMovie.status === false)
-    //   this.$store.dispatch('adminMovie/changeImageCover', dataMovie.imageCover)
-    // else {
-    //   const movieData = await formatObj(state, dispatch, dataMovie.movieDetail)
-    //   commit('updateInfoMovie', movieData)
-    //   commit(
-    //     'changeImageCover',
-    //     'https://res.cloudinary.com/teepublic/image/private/s--c746ptCM--/c_crop,x_10,y_10/c_fit,h_690/c_crop,g_north_west,h_734,w_1004,x_-199,y_-22/l_upload:v1466701074:production:blanks:ibu6swrzxdis4kiazjnn/fl_layer_apply,g_north_west,x_-330,y_-275/b_rgb:ffffff/c_limit,f_jpg,h_630,q_90,w_630/v1547232282/production/designs/3943702_0.jpg'
-    //   )
-    // }
+  async getInfoMovie({ commit }, objData) {
+    clearDataBeforeGetInfo(commit, objData)
+    for (const key in objData) {
+      const response = await customAxios(`getInfoMovie${key}/${objData[key]}`)
+      commit('updateState', { isLoadingMovie: false })
+      commit('updateState', response.data)
+    }
   },
 
   updateState({ commit }, objData) {
     commit('updateState', objData)
   },
-
-  // addListStudio({ commit }, newStudio) {
-  //   commit('addListStudio', newStudio)
-  // },
-  // modifyList({ commit }, dataModify) {
-  //   commit('updateInfoMovie', dataModify)
-  // }
 }
 
 // async function formatObj(state, dispatch, obj) {
@@ -148,4 +122,29 @@ export const actions = {
 async function customAxios(url = '') {
   const response = await axios.get(baseUrl + url)
   return response.data
+}
+
+function clearDataBeforeGetInfo(commit, objData) {
+  commit('updateState', {
+    infoMovie: {
+      fileName: '',
+      movieName: '',
+      movieCode: '',
+      actresses: '',
+      movieGenre: [],
+      movieStudio: { id: '', name: '' },
+      label: '',
+      series: '',
+      director: '',
+      uncensored: '',
+      releaseDate: '',
+      imageCover: '',
+    },
+  })
+  commit('updateState', { moviesMatched: [] })
+  commit('updateState', { isLoadingMovie: true })
+  commit('updateState', { isNoMovieMatched: false })
+  for (const key in objData) {
+    if (key === 'ByName') commit('updateState', { selectedMovie: objData[key] })
+  }
 }

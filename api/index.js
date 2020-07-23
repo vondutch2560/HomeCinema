@@ -16,27 +16,47 @@ app.get('/getInfoMovieByName/:fileNameMovie', async (req, res) => {
   const response = await axios.get(
     `https://www.r18.com/common/search/searchword=${parseMovie[2]}/` // parseMovie[2] is code movie
   )
-  const regexMovies = /<a href="(https:\/\/www\.r18\.com\/videos\/vod\/movies\/detail\/-\/id=.*)">/gm
+  const regexMovies = /<a href="(https:\/\/www\.r18\.com\/videos\/vod\/movies\/detail\/-\/id=.*)">\s*<p>\s*<img alt="(.*)"\s*.*data-original="(http.*\.jpg)"/gm
   const movie = []
   let m
   while ((m = regexMovies.exec(response.data)) !== null) {
-    movie.push(m[1])
+    movie.push({
+      url: m[1],
+      code: m[2],
+      thumbnail: m[3],
+    })
   }
   if (movie.length === 0)
-    res.send({ status: false, message: 'movie not found', imageCover: '404' })
-  if (movie.length > 1)
-    res.send({ status: false, message: 'many movie', imageCover: '404' })
-  if (movie.length === 1) {
-    const response = await getInfoMovie(movie[0])
-    res.send({ status: true, data: response })
-  }
+    res.send({
+      statusCode: 0,
+      message: 'No Movie',
+      data: { isNoMovieMatched: true },
+    })
 
-  // const movieDetail = await parseInfoMovie(movie[0])
+  if (movie.length > 1)
+    res.send({
+      statusCode: 2,
+      message: 'Many Movie',
+      data: { moviesMatched: movie },
+    })
+
+  if (movie.length === 1) {
+    const response = await getInfoMovie(movie[0].url)
+    res.send({
+      statusCode: 1,
+      message: 'One Movie',
+      data: { infoMovie: response },
+    })
+  }
 })
 
-app.get('getInfoMovieByLink/:link', async (req, res) => {
+app.get('/getInfoMovieByLink/:link', async (req, res) => {
   const response = await getInfoMovie(req.params.link)
-  res.send(response)
+  res.send({
+    statusCode: 1,
+    message: 'One Movie',
+    data: { infoMovie: response },
+  })
 
   // const movieName = regexInfoMovie(/name">([\s\S]*)<\/cite>/gm, response.data);
   // const releaseDate = regexInfoMovie(
