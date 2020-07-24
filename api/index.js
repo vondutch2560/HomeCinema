@@ -2,25 +2,22 @@ const fs = require('fs')
 const axios = require('axios')
 const express = require('express')
 const app = express()
+const mongoose = require('mongoose')
 
 const movieGenre = require('./database/MovieGenre')
 
-// const mongoose = require('mongoose')
-
-// mongoose.connect(
-//   'mongodb+srv://vondutch2560:Vonmg931407612@mongocluster-fpyaf.gcp.mongodb.net/jap_vid?retryWrites=true&w=majority',
-//   {
-//     useUnifiedTopology: true,
-//     useNewUrlParser: true,
-//   }
-// )
-
-// const schema = new mongoose.Schema({ name: 'string' })
-// const genre = mongoose.model('genre', schema)
-// const newGenre = new genre({ name: 'test' })
-// newGenre.save(function (err) {
-//   if (err) return handleError(err)
-// })
+mongoose.connect(
+  'mongodb+srv://vondutch2560:Vonmg931407612@mongocluster-fpyaf.gcp.mongodb.net/jap_vid?retryWrites=true&w=majority',
+  {
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+    useCreateIndex: true,
+  },
+  (err) => {
+    if (err) console.err(err)
+    console.log('Connected Atlas MongoDB successfully')
+  }
+)
 
 app.get('/getDataInit', function (req, res) {
   fs.readFile('./assets/jav.txt', 'utf8', function (err, data) {
@@ -114,14 +111,11 @@ function regexInfoMovie(regex, str) {
   const result = match === null ? '' : match[1]
   return result.trim()
 }
-app.use('/genre/', movieGenre)
+
+app.use('/moviegenre/', movieGenre)
 
 // Export the server middleware
 module.exports = {
   path: '/api',
   handler: app,
 }
-// export default {
-//   path: '/api',
-//   handler: app,
-// }

@@ -23,7 +23,7 @@ export default {
   },
 
   beforeCreate() {
-    this.$store.dispatch('ManagerMovie/setupDataInit')
+    this.$store.dispatch('ManagerMovie/getListMovie')
   },
 
   methods: {

@@ -4,12 +4,8 @@ const baseUrl = `${process.env.baseUrl}/api/`
 export const state = () => ({
   listMovie: [],
   listActresses: [],
-  movieGenreDB: [
-    { value: '5eadb307f0ed3fc89abd936e', text: 'Anal' },
-    { value: '5eadb320f0ed3fc89abd936f', text: 'Beautiful Girl' },
-    { value: '5eadb34bf0ed3fc89abd9370', text: 'Digital Mosaic' },
-  ],
-  listSeries: [],
+  moviegenre: [],
+  listSeries: ['abc'],
   listStudio: [],
   selectedMovie: '',
   secureImage: true,
@@ -42,7 +38,7 @@ export const mutations = {
 }
 
 export const actions = {
-  async setupDataInit({ commit }) {
+  async getListMovie({ commit }) {
     const dataInit = [{ listMovie: await customAxios('getDataInit') }]
     dataInit.forEach((item) => {
       commit('updateState', item)
@@ -56,6 +52,11 @@ export const actions = {
       commit('updateState', { isLoadingMovie: false })
       commit('updateState', response.data)
     }
+  },
+
+  async getDataForSelectInput({ commit }, collectionName) {
+    const response = await customAxios(collectionName)
+    commit('updateState', { [collectionName]: response })
   },
 
   updateState({ commit }, objData) {

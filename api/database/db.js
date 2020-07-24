@@ -5,10 +5,11 @@ const con = mongoose.connect(
   {
     useUnifiedTopology: true,
     useNewUrlParser: true,
+    useCreateIndex: true,
   },
   (err) => {
-    if (err) console.log(err)
-    console.log('Connected successfully')
+    if (err) console.err(err)
+    console.log('Connected Atlas MongoDB successfully')
   }
 )
 

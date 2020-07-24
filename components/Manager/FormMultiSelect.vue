@@ -3,18 +3,16 @@
     <label :for="getId">{{ fieldLabel }}</label>
     <multi-select
       :id="getId"
-      :options="movieGenreDB"
+      :options="convertToOptions"
       :selected-options="getSelected"
       :placeholder="`Select ${fieldLabel}`"
       @select="onSelect"
     >
     </multi-select>
-    {{ movieGenreDB }}
   </div>
 </template>
 
 <script>
-import { mapState } from 'vuex'
 import { MultiSelect } from 'vue-search-select'
 
 export default {
@@ -25,7 +23,13 @@ export default {
   },
 
   computed: {
-    ...mapState('ManagerMovie', ['infoMovie', 'movieGenreDB']),
+    infoMovie() {
+      return this.$store.state.ManagerMovie.infoMovie
+    },
+
+    vuexStateData() {
+      return this.$store.state.ManagerMovie[this.vuexStateName()]
+    },
 
     getId() {
       return this.fieldLabel.toLowerCase().trim().replace(/\s/g, '-')
@@ -34,22 +38,40 @@ export default {
     getSelected() {
       return this.infoMovie.movieGenre
     },
+
+    convertToOptions() {
+      const options = []
+      this.vuexStateData.forEach((item) => {
+        options.push({ value: item._id, text: item.name })
+      })
+      return options
+    },
+  },
+
+  created() {
+    this.$store.dispatch(
+      'ManagerMovie/getDataForSelectInput',
+      this.vuexStateName()
+    )
   },
 
   methods: {
+    vuexStateName() {
+      return this.fieldLabel.toLowerCase().trim().replace(/\s/g, '')
+    },
     onSelect(items, lastSelectItem) {
       console.log(items, lastSelectItem)
     },
-    cloneObject(obj) {
-      return JSON.parse(JSON.stringify(obj))
-    },
-    renameKeyObj(obj) {
-      obj.text = this.$options.filters.decodeEntities(obj.name)
-      obj.value = obj.id
-      delete obj.name
-      delete obj.id
-      return obj
-    },
+    // cloneObject(obj) {
+    //   return JSON.parse(JSON.stringify(obj))
+    // },
+    // renameKeyObj(obj) {
+    //   obj.text = this.$options.filters.decodeEntities(obj.name)
+    //   obj.value = obj.id
+    //   delete obj.name
+    //   delete obj.id
+    //   return obj
+    // },
   },
 }
 </script>
