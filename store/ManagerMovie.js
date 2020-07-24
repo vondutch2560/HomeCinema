@@ -4,7 +4,11 @@ const baseUrl = `${process.env.baseUrl}/api/`
 export const state = () => ({
   listMovie: [],
   listActresses: [],
-  listGenre: [],
+  movieGenreDB: [
+    { value: '5eadb307f0ed3fc89abd936e', text: 'Anal' },
+    { value: '5eadb320f0ed3fc89abd936f', text: 'Beautiful Girl' },
+    { value: '5eadb34bf0ed3fc89abd9370', text: 'Digital Mosaic' },
+  ],
   listSeries: [],
   listStudio: [],
   selectedMovie: '',
@@ -16,7 +20,7 @@ export const state = () => ({
     movieCode: '',
     actresses: '',
     movieGenre: [],
-    movieStudio: { id: '', name: '' },
+    movieStudio: [],
     label: '',
     series: '',
     director: '',
@@ -33,6 +37,7 @@ export const mutations = {
     for (const key in objMovie) {
       state[key] = objMovie[key]
     }
+    state.infoMovie.fileName = state.selectedMovie
   },
 }
 

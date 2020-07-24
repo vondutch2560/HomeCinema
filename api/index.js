@@ -3,6 +3,25 @@ const axios = require('axios')
 const express = require('express')
 const app = express()
 
+const movieGenre = require('./database/MovieGenre')
+
+// const mongoose = require('mongoose')
+
+// mongoose.connect(
+//   'mongodb+srv://vondutch2560:Vonmg931407612@mongocluster-fpyaf.gcp.mongodb.net/jap_vid?retryWrites=true&w=majority',
+//   {
+//     useUnifiedTopology: true,
+//     useNewUrlParser: true,
+//   }
+// )
+
+// const schema = new mongoose.Schema({ name: 'string' })
+// const genre = mongoose.model('genre', schema)
+// const newGenre = new genre({ name: 'test' })
+// newGenre.save(function (err) {
+//   if (err) return handleError(err)
+// })
+
 app.get('/getDataInit', function (req, res) {
   fs.readFile('./assets/jav.txt', 'utf8', function (err, data) {
     if (err) throw err
@@ -57,56 +76,34 @@ app.get('/getInfoMovieByLink/:link', async (req, res) => {
     message: 'One Movie',
     data: { infoMovie: response },
   })
-
-  // const movieName = regexInfoMovie(/name">([\s\S]*)<\/cite>/gm, response.data);
-  // const releaseDate = regexInfoMovie(
-  //   /dateCreated">\s*([^<]*)/gm,
-  //   response.data
-  // );
-  // const director = regexInfoMovie(
-  //   /itemprop="director">\s*([^<]*)/gm,
-  //   response.data
-  // );
-  // const movieStudio = regexInfoMovie(/studio[^>]*>\s*([^<]*)/gm, response.data);
-  // const label = regexInfoMovie(
-  //   /Label:[^>]*[^<]*<dd>\s*([^<]*)/gm,
-  //   response.data
-  // );
-  // const series = regexInfoMovie(
-  //   /series\/page[^>]*>\s*([^<]*)/gm,
-  //   response.data
-  // );
-
-  // const actresses = regexInfoMovie(
-  //   /actress\/page[^>]*[^<]*<span[^>]*>\s*([^<]*)/gm,
-  //   response.data
-  // );
-
-  // let movieGenre = [];
-  // let m;
-  // const regexGenre = /itemprop="genre">\s*([^<]*)/gm;
-  // while ((m = regexGenre.exec(response.data)) !== null) {
-  //   movieGenre.push(m[1]);
-  // }
-
-  // return {
-  //   imageCover,
-  //   movieName,
-  //   releaseDate,
-  //   director,
-  //   movieStudio,
-  //   label,
-  //   series,
-  //   actresses,
-  //   movieGenre,
-  // };
 })
 
 async function getInfoMovie(url) {
   const response = await axios.get(url)
 
+  const movieGenre = []
+  let m
+  const regexGenre = /itemprop="genre">\s*([^<]*)/gm
+  while ((m = regexGenre.exec(response.data)) !== null) {
+    movieGenre.push(m[1])
+  }
+
   const infoMovie = {
     imageCover: regexInfoMovie(/cover" src="([^"]*)/gm, response.data),
+    movieName: regexInfoMovie(/name">([\s\S]*)<\/cite>/gm, response.data),
+    movieCode: regexInfoMovie(/VD ID:<\/dt>\s*<dd>\s*([^<]*)/gm, response.data),
+    actresses: regexInfoMovie(
+      /actress\/page[^>]*[^<]*<span[^>]*>\s*([^<]*)/gm,
+      response.data
+    ),
+    movieGenre,
+    movieStudio: regexInfoMovie(/studio[^>]*>\s*([^<]*)/gm, response.data),
+    label: regexInfoMovie(/Label:[^>]*[^<]*<dd>\s*([^<]*)/gm, response.data),
+    series: regexInfoMovie(/series\/page[^>]*>\s*([^<]*)/gm, response.data),
+    director: regexInfoMovie(/itemprop="director">\s*([^<]*)/gm, response.data),
+    releaseDate: new Date(
+      regexInfoMovie(/dateCreated">\s*(.*)<br>/gm, response.data)
+    ),
   }
 
   return infoMovie
@@ -115,8 +112,9 @@ async function getInfoMovie(url) {
 function regexInfoMovie(regex, str) {
   const match = regex.exec(str)
   const result = match === null ? '' : match[1]
-  return result
+  return result.trim()
 }
+app.use('/genre/', movieGenre)
 
 // Export the server middleware
 module.exports = {
