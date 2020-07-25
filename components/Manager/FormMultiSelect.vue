@@ -3,7 +3,7 @@
     <label :for="getId">{{ fieldLabel }}</label>
     <multi-select
       :id="getId"
-      :options="convertToOptions"
+      :options="vuexStateData"
       :selected-options="getSelected"
       :placeholder="`Select ${fieldLabel}`"
       @select="onSelect"
@@ -38,14 +38,6 @@ export default {
     getSelected() {
       return this.infoMovie.movieGenre
     },
-
-    convertToOptions() {
-      const options = []
-      this.vuexStateData.forEach((item) => {
-        options.push({ value: item._id, text: item.name })
-      })
-      return options
-    },
   },
 
   created() {
@@ -62,16 +54,17 @@ export default {
     onSelect(items, lastSelectItem) {
       console.log(items, lastSelectItem)
     },
-    // cloneObject(obj) {
-    //   return JSON.parse(JSON.stringify(obj))
-    // },
-    // renameKeyObj(obj) {
-    //   obj.text = this.$options.filters.decodeEntities(obj.name)
-    //   obj.value = obj.id
-    //   delete obj.name
-    //   delete obj.id
-    //   return obj
-    // },
+
+    cloneObject(obj) {
+      return JSON.parse(JSON.stringify(obj))
+    },
+    renameKeyObj(obj) {
+      obj.text = this.$options.filters.decodeEntities(obj.name)
+      obj.value = obj.id
+      delete obj.name
+      delete obj.id
+      return obj
+    },
   },
 }
 </script>

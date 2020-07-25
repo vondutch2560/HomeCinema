@@ -56,7 +56,16 @@ export const actions = {
 
   async getDataForSelectInput({ commit }, collectionName) {
     const response = await customAxios(collectionName)
-    commit('updateState', { [collectionName]: response })
+    const renameKeyObject = JSON.parse(JSON.stringify(response))
+    renameKeyObject.forEach((item) => {
+      item.text = item.name
+      item.value = item._id
+      delete item.name
+      delete item._id
+      delete item.__v
+    })
+    response.length = 0
+    commit('updateState', { [collectionName]: renameKeyObject })
   },
 
   updateState({ commit }, objData) {
