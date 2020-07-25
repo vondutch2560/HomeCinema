@@ -3,10 +3,12 @@ const baseUrl = `${process.env.baseUrl}/api/`
 
 export const state = () => ({
   listMovie: [],
-  listActresses: [],
+  actresses: [],
   moviegenre: [],
-  listSeries: ['abc'],
-  listStudio: [],
+  moviestudio: [],
+  label: [],
+  series: [],
+  director: [],
   selectedMovie: '',
   secureImage: true,
   isLoadingMovie: false,
@@ -14,9 +16,9 @@ export const state = () => ({
     fileName: '',
     movieName: '',
     movieCode: '',
-    actresses: '',
-    movieGenre: [],
-    movieStudio: [],
+    actresses: [],
+    moviegenre: [],
+    moviestudio: [],
     label: '',
     series: '',
     director: '',
@@ -35,27 +37,39 @@ export const mutations = {
     }
     state.infoMovie.fileName = state.selectedMovie
   },
+
+  // updateInfoMovieSelected(state, objData) {
+
+  //   for (const key in objData) {
+  //     console.log(key, state.infoMovie)
+  //     state.infoMovie[key] = objData[key]
+  //   }
+  // },
 }
 
 export const actions = {
   async getListMovie({ commit }) {
-    const dataInit = [{ listMovie: await customAxios('getDataInit') }]
+    const dataInit = [{ listMovie: await getAxios('getDataInit') }]
     dataInit.forEach((item) => {
       commit('updateState', item)
     })
   },
 
-  async getInfoMovie({ commit }, objData) {
+  async getInfoMovie({ state, commit, dispatch }, objData) {
     clearDataBeforeGetInfo(commit, objData)
     for (const key in objData) {
-      const response = await customAxios(`getInfoMovie${key}/${objData[key]}`)
+      const response = await getAxios(`getInfoMovie${key}/${objData[key]}`)
+      const parseInfoMovie =
+        response.statusCode === 1
+          ? await checkExistDB(response.data.infoMovie, state, dispatch)
+          : response.data
       commit('updateState', { isLoadingMovie: false })
-      commit('updateState', response.data)
+      commit('updateState', parseInfoMovie)
     }
   },
 
   async getDataForSelectInput({ commit }, collectionName) {
-    const response = await customAxios(collectionName)
+    const response = await getAxios(collectionName)
     const renameKeyObject = JSON.parse(JSON.stringify(response))
     renameKeyObject.forEach((item) => {
       item.text = item.name
@@ -66,6 +80,7 @@ export const actions = {
     })
     response.length = 0
     commit('updateState', { [collectionName]: renameKeyObject })
+    return renameKeyObject
   },
 
   updateState({ commit }, objData) {
@@ -107,7 +122,7 @@ export const actions = {
 //     })
 
 //     if (insertGenre.status === 200) {
-//       const listGenre = await customAxios('/genre')
+//       const listGenre = await getAxios('/genre')
 //       dispatch('modifyList', { listGenre })
 //     }
 //   }
@@ -134,20 +149,15 @@ export const actions = {
 //   return JSON.parse(JSON.stringify(findStudio))
 // }
 
-async function customAxios(url = '') {
-  const response = await axios.get(baseUrl + url)
-  return response.data
-}
-
 function clearDataBeforeGetInfo(commit, objData) {
   commit('updateState', {
     infoMovie: {
       fileName: '',
       movieName: '',
       movieCode: '',
-      actresses: '',
-      movieGenre: [],
-      movieStudio: { id: '', name: '' },
+      actresses: [],
+      moviegenre: [],
+      moviestudio: [],
       label: '',
       series: '',
       director: '',
@@ -162,4 +172,50 @@ function clearDataBeforeGetInfo(commit, objData) {
   for (const key in objData) {
     if (key === 'ByName') commit('updateState', { selectedMovie: objData[key] })
   }
+}
+
+async function checkExistDB(infoMovie, state, dispatch) {
+  for (const key in infoMovie) {
+    if (typeof infoMovie[key] === 'object') {
+      const existValue = []
+      const existText = []
+
+      infoMovie[key].forEach((item) => {
+        state[key].forEach((itemDB) => {
+          if (item === itemDB.text) {
+            existValue.push(itemDB.value)
+            existText.push(itemDB.text)
+          }
+        })
+      })
+
+      const valueAddDB = infoMovie[key].filter(
+        (item) => !existText.includes(item)
+      )
+
+      if (valueAddDB.length === 0) infoMovie[key] = existValue
+
+      if (valueAddDB.length > 0) {
+        await postAxios(key, { dataInsert: valueAddDB })
+        await dispatch('getDataForSelectInput', key)
+
+        const selected = []
+        state[key].forEach((item) => {
+          if (infoMovie[key].includes(item.text)) selected.push(item.value)
+        })
+
+        infoMovie[key] = selected
+      }
+    }
+  }
+  return { infoMovie }
+}
+
+async function getAxios(url = '') {
+  const response = await axios.get(baseUrl + url)
+  return response.data
+}
+async function postAxios(url, data) {
+  const response = await axios.post(baseUrl + url, data)
+  return response
 }

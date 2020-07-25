@@ -1,6 +1,7 @@
 const fs = require('fs')
 const axios = require('axios')
 const express = require('express')
+const bodyParser = require('body-parser')
 const app = express()
 const mongoose = require('mongoose')
 
@@ -14,10 +15,12 @@ mongoose.connect(
     useCreateIndex: true,
   },
   (err) => {
-    if (err) console.err(err)
-    console.log('Connected Atlas MongoDB successfully')
+    if (err) throw err
   }
 )
+
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
 
 app.get('/getDataInit', function (req, res) {
   fs.readFile('./assets/jav.txt', 'utf8', function (err, data) {
@@ -78,38 +81,36 @@ app.get('/getInfoMovieByLink/:link', async (req, res) => {
 async function getInfoMovie(url) {
   const response = await axios.get(url)
 
-  const movieGenre = []
-  let m
-  const regexGenre = /itemprop="genre">\s*([^<]*)/gm
-  while ((m = regexGenre.exec(response.data)) !== null) {
-    movieGenre.push(m[1])
-  }
-
   const infoMovie = {
-    imageCover: regexInfoMovie(/cover" src="([^"]*)/gm, response.data),
-    movieName: regexInfoMovie(/name">([\s\S]*)<\/cite>/gm, response.data),
-    movieCode: regexInfoMovie(/VD ID:<\/dt>\s*<dd>\s*([^<]*)/gm, response.data),
-    actresses: regexInfoMovie(
-      /actress\/page[^>]*[^<]*<span[^>]*>\s*([^<]*)/gm,
-      response.data
-    ),
-    movieGenre,
-    movieStudio: regexInfoMovie(/studio[^>]*>\s*([^<]*)/gm, response.data),
-    label: regexInfoMovie(/Label:[^>]*[^<]*<dd>\s*([^<]*)/gm, response.data),
-    series: regexInfoMovie(/series\/page[^>]*>\s*([^<]*)/gm, response.data),
-    director: regexInfoMovie(/itemprop="director">\s*([^<]*)/gm, response.data),
-    releaseDate: new Date(
-      regexInfoMovie(/dateCreated">\s*(.*)<br>/gm, response.data)
-    ),
+    imageCover: regexInfo(/cover" src="([^"]*)/gm, 'string', response),
+    movieName: regexInfo(/name">([\s\S]*)<\/cite>/gm, 'string', response),
+    movieCode: regexInfo(/D ID:<\/dt>\s*<dd>\s*([^<]*)/gm, 'string', response),
+    // actresses: regexInfo(/ss\/p.*\s*<s.*">([^<]*)</gm, 'array', response),
+    moviegenre: regexInfo(/prop="genre">\s*([^<]*)/gm, 'array', response),
+    movieStudio: regexInfo(/studio[^>]*>\s*([^<]*)/gm, 'string', response),
+    label: regexInfo(/Label:[^>]*[^<]*<dd>\s*([^<]*)/gm, 'string', response),
+    series: regexInfo(/series\/page[^>]*>\s*([^<]*)/gm, 'string', response),
+    director: regexInfo(/itemprop="director">\s*([^<]*)/gm, 'string', response),
+    releaseDate: new Date(regexInfo(/reated">\s*(.*)<b/gm, 'string', response)),
   }
 
   return infoMovie
 }
 
-function regexInfoMovie(regex, str) {
-  const match = regex.exec(str)
-  const result = match === null ? '' : match[1]
-  return result.trim()
+function regexInfo(regex, type, source) {
+  if (type === 'string') {
+    const match = regex.exec(source.data)
+    const result = match === null ? '' : match[1]
+    return result.trim()
+  }
+  if (type === 'array') {
+    const arr = []
+    let m
+    while ((m = regex.exec(source.data)) !== null) {
+      arr.push(m[1].trim())
+    }
+    return arr
+  }
 }
 
 app.use('/moviegenre/', movieGenre)

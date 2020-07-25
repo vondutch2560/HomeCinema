@@ -23,20 +23,26 @@ export default {
   },
 
   computed: {
-    infoMovie() {
-      return this.$store.state.ManagerMovie.infoMovie
-    },
-
     vuexStateData() {
       return this.$store.state.ManagerMovie[this.vuexStateName()]
     },
 
-    getId() {
-      return this.fieldLabel.toLowerCase().trim().replace(/\s/g, '-')
+    getSelected() {
+      const selected = []
+      this.$store.state.ManagerMovie[this.vuexStateName()].forEach((item) => {
+        if (
+          this.$store.state.ManagerMovie.infoMovie[
+            this.vuexStateName()
+          ].includes(item.value)
+        )
+          selected.push({ value: item.value, text: item.text })
+      })
+
+      return selected
     },
 
-    getSelected() {
-      return this.infoMovie.movieGenre
+    getId() {
+      return this.fieldLabel.toLowerCase().trim().replace(/\s/g, '-')
     },
   },
 
@@ -51,9 +57,8 @@ export default {
     vuexStateName() {
       return this.fieldLabel.toLowerCase().trim().replace(/\s/g, '')
     },
-    onSelect(items, lastSelectItem) {
-      console.log(items, lastSelectItem)
-    },
+
+    onSelect(items, lastSelectItem) {},
 
     cloneObject(obj) {
       return JSON.parse(JSON.stringify(obj))
