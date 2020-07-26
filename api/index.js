@@ -6,6 +6,8 @@ const app = express()
 const mongoose = require('mongoose')
 
 const movieGenre = require('./database/MovieGenre')
+const movieActress = require('./database/MovieActress')
+const movieStudio = require('./database/MovieStudio')
 
 mongoose.connect(
   'mongodb+srv://vondutch2560:Vonmg931407612@mongocluster-fpyaf.gcp.mongodb.net/jap_vid?retryWrites=true&w=majority',
@@ -61,11 +63,13 @@ app.get('/getInfoMovieByName/:fileNameMovie', async (req, res) => {
 
   if (movie.length === 1) {
     const response = await getInfoMovie(movie[0].url)
-    res.send({
-      statusCode: 1,
-      message: 'One Movie',
-      data: { infoMovie: response },
-    })
+    res.send(
+      JSON.stringify({
+        statusCode: 1,
+        message: 'One Movie' + response.moviestudio,
+        data: { infoMovie: response },
+      })
+    )
   }
 })
 
@@ -85,9 +89,9 @@ async function getInfoMovie(url) {
     imageCover: regexInfo(/cover" src="([^"]*)/gm, 'string', response),
     movieName: regexInfo(/name">([\s\S]*)<\/cite>/gm, 'string', response),
     movieCode: regexInfo(/D ID:<\/dt>\s*<dd>\s*([^<]*)/gm, 'string', response),
-    // actresses: regexInfo(/ss\/p.*\s*<s.*">([^<]*)</gm, 'array', response),
+    movieactress: regexInfo(/ss\/p.*\s*<s.*">([^<]*)</gm, 'array', response),
     moviegenre: regexInfo(/prop="genre">\s*([^<]*)/gm, 'array', response),
-    movieStudio: regexInfo(/studio[^>]*>\s*([^<]*)/gm, 'string', response),
+    moviestudio: regexInfo(/studio[^>]*>\s*([^<]*)<\/a>/gm, 'string', response),
     label: regexInfo(/Label:[^>]*[^<]*<dd>\s*([^<]*)/gm, 'string', response),
     series: regexInfo(/series\/page[^>]*>\s*([^<]*)/gm, 'string', response),
     director: regexInfo(/itemprop="director">\s*([^<]*)/gm, 'string', response),
@@ -114,6 +118,8 @@ function regexInfo(regex, type, source) {
 }
 
 app.use('/moviegenre/', movieGenre)
+app.use('/movieactress/', movieActress)
+app.use('/moviestudio/', movieStudio)
 
 // Export the server middleware
 module.exports = {

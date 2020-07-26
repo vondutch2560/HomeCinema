@@ -9,6 +9,8 @@
         <form-input-text field-label="Movie Name" />
         <form-input-text field-label="Movie Code" />
         <form-multi-select field-label="Movie Genre" />
+        <form-multi-select field-label="Movie Actress" />
+        <!-- <form-basic-select field-label="Movie Studio" /> -->
       </div>
       <div class="data-insert">
         <pre>{{ infoMovie }}</pre>
@@ -22,10 +24,17 @@ import { mapState } from 'vuex'
 import SideBar from '@/components/Manager/SideBar'
 import CoverMovie from '@/components/Manager/CoverMovie'
 import FormInputText from '@/components/Manager/FormInputText'
+// import FormBasicSelect from '@/components/Manager/FormBasicSelect'
 import FormMultiSelect from '@/components/Manager/FormMultiSelect'
 
 export default {
-  components: { SideBar, CoverMovie, FormInputText, FormMultiSelect },
+  components: {
+    SideBar,
+    CoverMovie,
+    FormInputText,
+    // FormBasicSelect,
+    FormMultiSelect,
+  },
   computed: {
     ...mapState('ManagerMovie', ['infoMovie']),
   },
@@ -50,6 +59,16 @@ h1 {
     display: inline-block;
     width: calc(55% - 10px);
     padding-left: 40px;
+    label {
+      user-select: none;
+    }
+    .ui.fluid.search.selection.dropdown,
+    .ui.fluid.search.dropdown.selection.multiple {
+      display: inline-block;
+      width: calc(100% - 120px);
+      max-width: 560px;
+      margin-bottom: 25px;
+    }
   }
 
   .data-insert {

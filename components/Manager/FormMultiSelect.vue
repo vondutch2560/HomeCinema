@@ -3,7 +3,7 @@
     <label :for="getId">{{ fieldLabel }}</label>
     <multi-select
       :id="getId"
-      :options="vuexStateData"
+      :options="getOptionsDB"
       :selected-options="getSelected"
       :placeholder="`Select ${fieldLabel}`"
       @select="onSelect"
@@ -23,19 +23,30 @@ export default {
   },
 
   computed: {
-    vuexStateData() {
-      return this.$store.state.ManagerMovie[this.vuexStateName()]
+    getOptionsDB() {
+      const decodeText = this.$store.state.ManagerMovie[this.stateName()].map(
+        (item) => {
+          return {
+            value: item._id,
+            text: this.$options.filters.decodeEntities(item.name),
+          }
+        }
+      )
+      return decodeText
     },
 
     getSelected() {
       const selected = []
-      this.$store.state.ManagerMovie[this.vuexStateName()].forEach((item) => {
+      this.$store.state.ManagerMovie[this.stateName()].forEach((item) => {
         if (
-          this.$store.state.ManagerMovie.infoMovie[
-            this.vuexStateName()
-          ].includes(item.value)
+          this.$store.state.ManagerMovie.infoMovie[this.stateName()].includes(
+            item._id
+          )
         )
-          selected.push({ value: item.value, text: item.text })
+          selected.push({
+            value: item._id,
+            text: this.$options.filters.decodeEntities(item.name),
+          })
       })
 
       return selected
@@ -47,51 +58,21 @@ export default {
   },
 
   created() {
-    this.$store.dispatch(
-      'ManagerMovie/getDataForSelectInput',
-      this.vuexStateName()
-    )
+    this.$store.dispatch('ManagerMovie/getDataForSelectInput', this.stateName())
   },
 
   methods: {
-    vuexStateName() {
+    stateName() {
       return this.fieldLabel.toLowerCase().trim().replace(/\s/g, '')
     },
 
-    onSelect(items, lastSelectItem) {},
-
-    cloneObject(obj) {
-      return JSON.parse(JSON.stringify(obj))
-    },
-    renameKeyObj(obj) {
-      obj.text = this.$options.filters.decodeEntities(obj.name)
-      obj.value = obj.id
-      delete obj.name
-      delete obj.id
-      return obj
+    onSelect(items, lastSelectItem, event) {
+      this.$store.dispatch('ManagerMovie/onSelectMulti', {
+        stateName: this.stateName(),
+        value: lastSelectItem.value,
+        event,
+      })
     },
   },
 }
 </script>
-
-<style scope>
-.ui.fluid.search.dropdown.selection.multiple {
-  display: inline-block;
-  width: calc(100% - 120px);
-  max-width: 560px;
-} /* .info-movie-admin .properties-movie .modify-multiselect {
-  display: inline-block;
-  width: 400px;
-}
-.ui.fluid.dropdown {
-  display: inline-block;
-  width: 400px;
-  border: 1px solid #bbb;
-  border-radius: 0;
-  padding-left: 8px;
-  margin-bottom: 25px;
-}
-.ui.multiple.search.dropdown > .text {
-  padding-left: 0 !important;
-} */
-</style>

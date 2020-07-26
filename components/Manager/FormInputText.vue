@@ -1,7 +1,13 @@
 <template>
   <div class="form-input">
     <label :for="getId">{{ fieldLabel }}</label>
-    <input :id="getId" :value="value" type="text" />
+    <input
+      :id="getId"
+      :value="value | decodeEntities"
+      type="text"
+      :readonly="fieldLabel === 'File Name'"
+      @keyup="updateText"
+    />
   </div>
 </template>
 
@@ -33,6 +39,13 @@ export default {
         keyObj += index === 0 ? word.toLowerCase() : word
       })
       return keyObj
+    },
+
+    updateText(event) {
+      this.$store.dispatch('ManagerMovie/updateTextInput', {
+        stateName: this.keyObj(),
+        value: this.$options.filters.encodeEntities(event.target.value),
+      })
     },
   },
 }

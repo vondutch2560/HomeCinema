@@ -3,7 +3,7 @@ const baseUrl = `${process.env.baseUrl}/api/`
 
 export const state = () => ({
   listMovie: [],
-  actresses: [],
+  movieactress: [],
   moviegenre: [],
   moviestudio: [],
   label: [],
@@ -16,9 +16,9 @@ export const state = () => ({
     fileName: '',
     movieName: '',
     movieCode: '',
-    actresses: [],
+    movieactress: [],
     moviegenre: [],
-    moviestudio: [],
+    moviestudio: '',
     label: '',
     series: '',
     director: '',
@@ -37,14 +37,6 @@ export const mutations = {
     }
     state.infoMovie.fileName = state.selectedMovie
   },
-
-  // updateInfoMovieSelected(state, objData) {
-
-  //   for (const key in objData) {
-  //     console.log(key, state.infoMovie)
-  //     state.infoMovie[key] = objData[key]
-  //   }
-  // },
 }
 
 export const actions = {
@@ -59,6 +51,7 @@ export const actions = {
     clearDataBeforeGetInfo(commit, objData)
     for (const key in objData) {
       const response = await getAxios(`getInfoMovie${key}/${objData[key]}`)
+      console.log(response)
       const parseInfoMovie =
         response.statusCode === 1
           ? await checkExistDB(response.data.infoMovie, state, dispatch)
@@ -70,17 +63,33 @@ export const actions = {
 
   async getDataForSelectInput({ commit }, collectionName) {
     const response = await getAxios(collectionName)
-    const renameKeyObject = JSON.parse(JSON.stringify(response))
-    renameKeyObject.forEach((item) => {
-      item.text = item.name
-      item.value = item._id
-      delete item.name
-      delete item._id
-      delete item.__v
-    })
-    response.length = 0
-    commit('updateState', { [collectionName]: renameKeyObject })
-    return renameKeyObject
+    commit('updateState', { [collectionName]: response })
+    // return renameKeyObject
+  },
+
+  updateTextInput({ state, commit }, objData) {
+    const infoMovieUpdate = JSON.parse(JSON.stringify(state.infoMovie))
+    infoMovieUpdate[objData.stateName] = objData.value
+    commit('updateState', { infoMovie: infoMovieUpdate })
+  },
+
+  onSelectMulti({ state, commit }, objData) {
+    const infoMovieUpdate = JSON.parse(JSON.stringify(state.infoMovie))
+    if (objData.event === 'insert')
+      infoMovieUpdate[objData.stateName].push(objData.value)
+    if (objData.event === 'delete') {
+      infoMovieUpdate[objData.stateName].forEach((item, index) => {
+        if (item === objData.value)
+          infoMovieUpdate[objData.stateName].splice(index, 1)
+      })
+    }
+    commit('updateState', { infoMovie: infoMovieUpdate })
+  },
+
+  onSelectBasic({ state, commit }, objData) {
+    const infoMovieUpdate = JSON.parse(JSON.stringify(state.infoMovie))
+    infoMovieUpdate[objData.stateName] = objData.value
+    commit('updateState', { infoMovie: infoMovieUpdate })
   },
 
   updateState({ commit }, objData) {
@@ -88,76 +97,15 @@ export const actions = {
   },
 }
 
-// async function formatObj(state, dispatch, obj) {
-//   for (const key in obj) {
-//     if (typeof obj[key] === 'string') obj[key] = obj[key].trim()
-//     if (key === 'releaseDate') obj[key] = formatDate(obj[key])
-//     if (key === 'movieStudio')
-//       obj[key] = await checkExistStudio(state, dispatch, obj)
-//     if (key === 'movieGenre')
-//       obj[key] = await checkExistGenre(state, dispatch, obj)
-//   }
-//   return obj
-// }
-
-// function formatDate(strDate) {
-//   const d = new Date(strDate)
-//   const year = d.getFullYear()
-//   const month = ('0' + (d.getMonth() + 1)).slice(-2)
-//   const date = ('0' + d.getDate()).slice(-2)
-//   return `${year}-${month}-${date}`
-// }
-
-// async function checkExistGenre(state, dispatch, obj) {
-//   const genreNotExist = []
-//   const genreSelected = []
-//   obj.movieGenre.forEach((genre) => {
-//     const findGenre = state.listGenre.find((item) => item.name === genre)
-//     if (findGenre === undefined) genreNotExist.push([genre])
-//   })
-
-//   if (genreNotExist.length !== 0) {
-//     const insertGenre = await axios.post(hostApi + '/genre', {
-//       genre: genreNotExist
-//     })
-
-//     if (insertGenre.status === 200) {
-//       const listGenre = await getAxios('/genre')
-//       dispatch('modifyList', { listGenre })
-//     }
-//   }
-//   obj.movieGenre.forEach((genre) => {
-//     const findGenre = state.listGenre.find((item) => item.name === genre)
-//     if (findGenre !== undefined) genreSelected.push(findGenre)
-//   })
-//   return JSON.parse(JSON.stringify(genreSelected))
-// }
-
-// async function checkExistStudio(state, dispatch, obj) {
-//   let findStudio = state.listStudio.find(
-//     (item) => item.name === obj.movieStudio
-//   )
-//   if (findStudio === undefined) {
-//     const response = await axios.post(hostApi + '/studio', {
-//       studio: obj.movieStudio
-//     })
-//     if (response.status === 200) {
-//       findStudio = response.data
-//       dispatch('addListStudio', findStudio)
-//     }
-//   }
-//   return JSON.parse(JSON.stringify(findStudio))
-// }
-
 function clearDataBeforeGetInfo(commit, objData) {
   commit('updateState', {
     infoMovie: {
       fileName: '',
       movieName: '',
       movieCode: '',
-      actresses: [],
+      movieactress: [],
       moviegenre: [],
-      moviestudio: [],
+      moviestudio: '',
       label: '',
       series: '',
       director: '',
@@ -182,9 +130,9 @@ async function checkExistDB(infoMovie, state, dispatch) {
 
       infoMovie[key].forEach((item) => {
         state[key].forEach((itemDB) => {
-          if (item === itemDB.text) {
-            existValue.push(itemDB.value)
-            existText.push(itemDB.text)
+          if (item === itemDB.name) {
+            existValue.push(itemDB._id)
+            existText.push(itemDB.name)
           }
         })
       })
@@ -201,7 +149,33 @@ async function checkExistDB(infoMovie, state, dispatch) {
 
         const selected = []
         state[key].forEach((item) => {
-          if (infoMovie[key].includes(item.text)) selected.push(item.value)
+          if (infoMovie[key].includes(item.name)) selected.push(item._id)
+        })
+
+        infoMovie[key] = selected
+      }
+    }
+    if (typeof infoMovie[key] === 'string' && ['moviestudio'].includes(key)) {
+      let existValue = ''
+      let existText = ''
+
+      // console.log(key,  state[key])
+      state[key].forEach((itemDB) => {
+        if (infoMovie[key] === itemDB.name) {
+          existValue = itemDB._id
+          existText = itemDB.name
+        }
+      })
+
+      if (existValue.length > 0) infoMovie[key] = existValue
+
+      if (existValue.length === 0) {
+        await postAxios(key, { dataInsert: existText })
+        await dispatch('getDataForSelectInput', key)
+
+        let selected = ''
+        state[key].forEach((newItemDB) => {
+          if (infoMovie[key] === newItemDB.name) selected = newItemDB._id
         })
 
         infoMovie[key] = selected

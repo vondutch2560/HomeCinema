@@ -12,24 +12,13 @@ const genreSchema = new mongoose.Schema({
 const Genre = mongoose.model('movie_genre', genreSchema)
 
 genreRouter.get('/', (req, res) => {
-  Genre.find(function (err, genres) {
-    if (err) throw err
-    console.log('get all document success')
-    res.send(genres)
-  })
+  Genre.find({})
+    .select({ name: 1 })
+    .exec(function (err, data) {
+      if (err) throw err
+      res.send(data)
+    })
 })
-
-// genreRouter.get('/:test', (req, res) => {
-//   Genre.find(
-//     {
-//       name: ['Ropes &amp; Ties'],
-//     },
-//     function (err, genres) {
-//       if (err) throw err
-//       res.send(genres)
-//     }
-//   )
-// })
 
 genreRouter.get('/delete', (req, res) => {
   Genre.deleteMany({}, function (err) {
@@ -45,7 +34,6 @@ genreRouter.post('/', (req, res) => {
       if (err) throw err
     })
   })
-  console.log('save document success')
   res.end('It worked!')
 })
 
