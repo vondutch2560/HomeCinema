@@ -1,18 +1,18 @@
 const express = require('express')
 const mongoose = require('mongoose')
-const studioRouter = express.Router()
+const serieRouter = express.Router()
 
-const studioSchema = new mongoose.Schema({
+const serieSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
     unique: true,
   },
 })
-const Studio = mongoose.model('movie_studio', studioSchema)
+const Serie = mongoose.model('movie_serie', serieSchema)
 
-studioRouter.get('/', (req, res) => {
-  Studio.find({})
+serieRouter.get('/', (req, res) => {
+  Serie.find({})
     .select({ name: 1 })
     .exec(function (err, data) {
       if (err) throw err
@@ -20,12 +20,12 @@ studioRouter.get('/', (req, res) => {
     })
 })
 
-studioRouter.post('/', (req, res) => {
-  const record = new Studio({ name: req.body.dataInsert })
+serieRouter.post('/', (req, res) => {
+  const record = new Serie({ name: req.body.dataInsert })
   record.save(function (err) {
     if (err) console.error(err)
     res.end('It worked!')
   })
 })
 
-module.exports = studioRouter
+module.exports = serieRouter

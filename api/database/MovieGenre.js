@@ -31,7 +31,7 @@ genreRouter.post('/', (req, res) => {
   req.body.dataInsert.forEach((item) => {
     const record = new Genre({ name: item })
     record.save(function (err) {
-      if (err) throw err
+      if (err) console.error(err)
     })
   })
   res.end('It worked!')

@@ -8,9 +8,12 @@
         <form-input-text field-label="File Name" />
         <form-input-text field-label="Movie Name" />
         <form-input-text field-label="Movie Code" />
-        <form-multi-select field-label="Movie Genre" />
+        <form-basic-select field-label="Movie Studio" />
+        <form-basic-select field-label="Movie Label" />
+        <form-basic-select field-label="Movie Serie" />
+        <form-basic-select field-label="Movie Director" />
         <form-multi-select field-label="Movie Actress" />
-        <!-- <form-basic-select field-label="Movie Studio" /> -->
+        <form-multi-select field-label="Movie Genre" />
       </div>
       <div class="data-insert">
         <pre>{{ infoMovie }}</pre>
@@ -24,7 +27,7 @@ import { mapState } from 'vuex'
 import SideBar from '@/components/Manager/SideBar'
 import CoverMovie from '@/components/Manager/CoverMovie'
 import FormInputText from '@/components/Manager/FormInputText'
-// import FormBasicSelect from '@/components/Manager/FormBasicSelect'
+import FormBasicSelect from '@/components/Manager/FormBasicSelect'
 import FormMultiSelect from '@/components/Manager/FormMultiSelect'
 
 export default {
@@ -32,7 +35,7 @@ export default {
     SideBar,
     CoverMovie,
     FormInputText,
-    // FormBasicSelect,
+    FormBasicSelect,
     FormMultiSelect,
   },
   computed: {
@@ -68,6 +71,25 @@ h1 {
       width: calc(100% - 120px);
       max-width: 560px;
       margin-bottom: 25px;
+      background: #444;
+      border: 1px solid #777;
+      color: #ddd;
+      .ui.label.transition.visible {
+        background: #777;
+        color: #ddd;
+      }
+    }
+    .ui.fluid.search.selection.dropdown.active.visible .menu.visible {
+      background: inherit;
+      border: 1px solid #777;
+      box-shadow: none;
+      .item {
+        border-top: 1px solid #676767;
+        color: #dedede;
+        &.selected {
+          background: #333;
+        }
+      }
     }
   }
 

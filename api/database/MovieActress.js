@@ -24,7 +24,7 @@ actressRouter.post('/', (req, res) => {
   req.body.dataInsert.forEach((item) => {
     const record = new Actresses({ name: item })
     record.save(function (err) {
-      if (err) throw err
+      if (err) console.error(err)
     })
   })
   res.end('It worked!')

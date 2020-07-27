@@ -17,7 +17,6 @@ import { mapState } from 'vuex'
 export default {
   props: {
     fieldLabel: { type: String, default: '' },
-    // value: { type: [String, Number, Date], default: '' },
   },
   computed: {
     ...mapState('ManagerMovie', ['infoMovie', 'selectedMovie']),

@@ -5,7 +5,6 @@
       :id="getId"
       :options="getOptionsDB"
       :selected-options="getSelected"
-      :placeholder="`Select ${fieldLabel}`"
       @select="onSelect"
     >
     </multi-select>
@@ -32,6 +31,7 @@ export default {
           }
         }
       )
+
       return decodeText
     },
 

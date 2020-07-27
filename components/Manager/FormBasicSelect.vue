@@ -4,8 +4,7 @@
     <basic-select
       :id="getId"
       :options="getOptionsDB"
-      :selected-option="{ value: 1, text: 'tast' }"
-      :placeholder="`Select ${fieldLabel}`"
+      :selected-option="getSelected"
       @select="onSelect"
     >
     </basic-select>
@@ -24,33 +23,34 @@ export default {
 
   computed: {
     getOptionsDB() {
-      // const decodeText = this.$store.state.ManagerMovie[this.stateName()].map(
-      //   (item) => {
-      //     return {
-      //       value: item._id,
-      //       text: this.$options.filters.decodeEntities(item.name),
-      //     }
-      //   }
-      // )
+      const decodeText = this.$store.state.ManagerMovie[this.stateName()].map(
+        (item) => {
+          return {
+            value: item._id,
+            text: this.$options.filters.decodeEntities(item.name),
+          }
+        }
+      )
 
-      return []
+      return decodeText
     },
 
-    // getSelected() {
-    //   let selected = {}
-    //   this.$store.state.ManagerMovie[this.stateName()].forEach((item) => {
-    //     if (
-    //       this.$store.state.ManagerMovie.infoMovie[this.stateName()].includes(
-    //         item._id
-    //       )
-    //     )
-    //       selected = {
-    //         value: item._id,
-    //         text: this.$options.filters.decodeEntities(item.name),
-    //       }
-    //   })
-    //   return selected
-    // },
+    getSelected() {
+      let selected = {}
+      this.$store.state.ManagerMovie[this.stateName()].forEach((item) => {
+        if (
+          this.$store.state.ManagerMovie.infoMovie[this.stateName()].includes(
+            item._id
+          )
+        )
+          selected = {
+            value: item._id,
+            text: this.$options.filters.decodeEntities(item.name),
+          }
+      })
+
+      return selected
+    },
 
     getId() {
       return this.fieldLabel.toLowerCase().trim().replace(/\s/g, '-')
@@ -58,7 +58,7 @@ export default {
   },
 
   created() {
-    // this.$store.dispatch('ManagerMovie/getDataForSelectInput', this.stateName())
+    this.$store.dispatch('ManagerMovie/getDataForSelectInput', this.stateName())
   },
 
   methods: {

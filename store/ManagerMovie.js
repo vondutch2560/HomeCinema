@@ -6,9 +6,9 @@ export const state = () => ({
   movieactress: [],
   moviegenre: [],
   moviestudio: [],
-  label: [],
-  series: [],
-  director: [],
+  movielabel: [],
+  movieserie: [],
+  moviedirector: [],
   selectedMovie: '',
   secureImage: true,
   isLoadingMovie: false,
@@ -19,9 +19,9 @@ export const state = () => ({
     movieactress: [],
     moviegenre: [],
     moviestudio: '',
-    label: '',
-    series: '',
-    director: '',
+    movielabel: '',
+    movieserie: '',
+    moviedirector: '',
     uncensored: '',
     releaseDate: '',
     imageCover: '',
@@ -51,7 +51,6 @@ export const actions = {
     clearDataBeforeGetInfo(commit, objData)
     for (const key in objData) {
       const response = await getAxios(`getInfoMovie${key}/${objData[key]}`)
-      console.log(response)
       const parseInfoMovie =
         response.statusCode === 1
           ? await checkExistDB(response.data.infoMovie, state, dispatch)
@@ -106,9 +105,9 @@ function clearDataBeforeGetInfo(commit, objData) {
       movieactress: [],
       moviegenre: [],
       moviestudio: '',
-      label: '',
-      series: '',
-      director: '',
+      movielabel: '',
+      movieserie: '',
+      moviedirector: '',
       uncensored: '',
       releaseDate: '',
       imageCover: '',
@@ -155,30 +154,24 @@ async function checkExistDB(infoMovie, state, dispatch) {
         infoMovie[key] = selected
       }
     }
-    if (typeof infoMovie[key] === 'string' && ['moviestudio'].includes(key)) {
+    if (
+      typeof infoMovie[key] === 'string' &&
+      ['moviestudio', 'movielabel', 'movieserie', 'moviedirector'].includes(key)
+    ) {
       let existValue = ''
-      let existText = ''
-
-      // console.log(key,  state[key])
       state[key].forEach((itemDB) => {
         if (infoMovie[key] === itemDB.name) {
           existValue = itemDB._id
-          existText = itemDB.name
         }
       })
-
-      if (existValue.length > 0) infoMovie[key] = existValue
-
-      if (existValue.length === 0) {
-        await postAxios(key, { dataInsert: existText })
+      if (existValue !== '') infoMovie[key] = existValue
+      if (existValue === '' && infoMovie[key] !== '') {
+        await postAxios(key, { dataInsert: infoMovie[key] })
         await dispatch('getDataForSelectInput', key)
 
-        let selected = ''
         state[key].forEach((newItemDB) => {
-          if (infoMovie[key] === newItemDB.name) selected = newItemDB._id
+          if (infoMovie[key] === newItemDB.name) infoMovie[key] = newItemDB._id
         })
-
-        infoMovie[key] = selected
       }
     }
   }
