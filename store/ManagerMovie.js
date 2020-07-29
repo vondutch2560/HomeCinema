@@ -25,9 +25,11 @@ export const state = () => ({
     uncensored: '',
     releaseDate: '',
     imageCover: '',
+    uncen: false,
   },
   moviesMatched: [],
   isNoMovieMatched: false,
+  saving: false,
 })
 
 export const mutations = {
@@ -41,10 +43,13 @@ export const mutations = {
 
 export const actions = {
   async getListMovie({ commit }) {
-    const dataInit = [{ listMovie: await getAxios('getDataInit') }]
-    dataInit.forEach((item) => {
-      commit('updateState', item)
-    })
+    const response = await getAxios('movie')
+    const localMovie = await getAxios('getDataInit')
+    const mongoMovie = response.map((item) => item.fileName)
+    const listMovie = localMovie.filter(
+      (filename) => !mongoMovie.includes(filename)
+    )
+    commit('updateState', { listMovie })
   },
 
   async getInfoMovie({ state, commit, dispatch }, objData) {
@@ -64,6 +69,15 @@ export const actions = {
     const response = await getAxios(collectionName)
     commit('updateState', { [collectionName]: response })
     // return renameKeyObject
+  },
+
+  async saveInfoMovie({ commit }, objData) {
+    commit('updateState', { saving: true })
+    const response = await postAxios('movie', { dataInsert: objData })
+    if (response) {
+      console.log(response)
+      commit('updateState', { saving: false })
+    }
   },
 
   updateTextInput({ state, commit }, objData) {
@@ -94,6 +108,12 @@ export const actions = {
   updateState({ commit }, objData) {
     commit('updateState', objData)
   },
+
+  updateUncen({ state, commit }, boolean) {
+    const infoMovieUpdate = JSON.parse(JSON.stringify(state.infoMovie))
+    infoMovieUpdate.uncen = !infoMovieUpdate.uncen
+    commit('updateState', { infoMovie: infoMovieUpdate })
+  },
 }
 
 function clearDataBeforeGetInfo(commit, objData) {
@@ -111,6 +131,7 @@ function clearDataBeforeGetInfo(commit, objData) {
       uncensored: '',
       releaseDate: '',
       imageCover: '',
+      uncen: false,
     },
   })
   commit('updateState', { moviesMatched: [] })

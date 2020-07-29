@@ -5,6 +5,7 @@ const bodyParser = require('body-parser')
 const app = express()
 const mongoose = require('mongoose')
 
+const movie = require('./database/Movie')
 const movieGenre = require('./database/MovieGenre')
 const movieActress = require('./database/MovieActress')
 const movieStudio = require('./database/MovieStudio')
@@ -28,9 +29,9 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
 app.get('/getDataInit', function (req, res) {
-  fs.readFile('./assets/jav.txt', 'utf8', function (err, data) {
+  fs.readdir('../JP/', function (err, data) {
     if (err) throw err
-    res.send(data.split('\n'))
+    res.send(data)
   })
 })
 
@@ -101,6 +102,7 @@ async function getInfoMovie(url) {
       response
     ),
     releaseDate: new Date(regexInfo(/reated">\s*(.*)<b/gm, 'string', response)),
+    uncen: false,
   }
 
   return infoMovie
@@ -122,6 +124,7 @@ function regexInfo(regex, type, source) {
   }
 }
 
+app.use('/movie/', movie)
 app.use('/moviegenre/', movieGenre)
 app.use('/movieactress/', movieActress)
 app.use('/moviestudio/', movieStudio)

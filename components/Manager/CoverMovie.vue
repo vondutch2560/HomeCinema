@@ -23,10 +23,17 @@
         <p class="code">{{ movieMatched.code }}</p>
       </div>
     </div>
-    <label
+    <label class="secure-image"
       ><input type="checkbox" :checked="secureImage" @click="toggleSecureImg" />
       Secure Image</label
     >
+    <label class="uncensored"
+      ><input type="checkbox" :checked="infoMovie.uncen" @click="toggleUncen" />
+      Uncensored</label
+    >
+    <button class="save" @click="saveData">
+      {{ saving ? 'saving' : 'save' }}
+    </button>
   </div>
 </template>
 
@@ -41,6 +48,7 @@ export default {
       'moviesMatched',
       'isLoadingMovie',
       'isNoMovieMatched',
+      'saving',
     ]),
 
     imageCover() {
@@ -57,10 +65,18 @@ export default {
       })
     },
 
+    toggleUncen(event) {
+      this.$store.dispatch('ManagerMovie/updateUncen')
+    },
+
     getInfoByLink(url) {
       this.$store.dispatch('ManagerMovie/getInfoMovie', {
         ByLink: encodeURIComponent(url),
       })
+    },
+
+    saveData() {
+      this.$store.dispatch('ManagerMovie/saveInfoMovie', this.infoMovie)
     },
   },
 }
@@ -151,6 +167,9 @@ export default {
     bottom: -30px;
     color: #ddd;
     user-select: none;
+    &.uncensored {
+      margin-left: 140px;
+    }
   }
 }
 

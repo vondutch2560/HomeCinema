@@ -19,7 +19,11 @@ import { mapState } from 'vuex'
 
 export default {
   computed: {
-    ...mapState('ManagerMovie', ['selectedMovie', 'listMovie']),
+    ...mapState('ManagerMovie', [
+      'selectedMovie',
+      'listMovie',
+      'isLoadingMovie',
+    ]),
   },
 
   beforeCreate() {
@@ -29,9 +33,10 @@ export default {
   methods: {
     selectMovie(event) {
       const fileNameMovie = event.target.innerHTML.trim()
-      this.$store.dispatch('ManagerMovie/getInfoMovie', {
-        ByName: fileNameMovie,
-      })
+      if (!this.isLoadingMovie)
+        this.$store.dispatch('ManagerMovie/getInfoMovie', {
+          ByName: fileNameMovie,
+        })
     },
   },
 }

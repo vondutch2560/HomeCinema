@@ -56,7 +56,7 @@ h1 {
 
 .main {
   margin-left: 320px;
-  padding: 25px;
+  padding: 25px 25px 0 25px;
 
   .properties-movie {
     display: inline-block;
@@ -94,8 +94,24 @@ h1 {
   }
 
   .data-insert {
-    margin-top: 30px;
+    display: inline-block;
+    width: 705px;
+    transform: translateY(-60px);
     color: #ddd;
+    font-size: 0.9em;
+  }
+
+  button.save {
+    border: none;
+    background: #35a69b;
+    padding: 10px 30px;
+    color: #ddd;
+    border-radius: 5px;
+    font-size: 1.01em;
+    position: absolute;
+    right: 0;
+    bottom: -50px;
+    outline: none;
   }
 }
 </style>
